@@ -24,3 +24,20 @@ while True:
         break
     else:
         print('The name is not valid. Try again!')
+
+# To avoid division by 0
+
+while True:
+    print('Now we divide a/b')
+    a = int(input('Enter number a: '))
+    b = int(input('Enter number b: '))
+    c = int(b and a/b)
+    print('a/b: ', c)
+    if not(b):
+        print('Check the answer when we entered 0 for the denominator')
+        print('Try again!')
+    else:
+        print('Done!')
+        break
+
+

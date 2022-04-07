@@ -3,13 +3,14 @@ from functools import lru_cache
 
 def memoize(fn):
     cache = {}
-    def inner(n):
-        if n not in cache:
-            cache[n] = fn(n)
-        return cache[n]
+    def inner(*args, **kwargs):
+        # print('memoize')
+        if args not in cache:
+            cache[args] = fn(*args, **kwargs)
+        # print(cache)
+        return cache[args]
     return inner
 
-@memoize
 def fib(n):
     if n==0:
         return 0
@@ -26,9 +27,10 @@ def fib_lru(n):
     return fib_lru(n-1) + fib_lru(n-2)
 
 
-for _ in range(35, 40):
-    start = perf_counter()
-    print('fib({0}) = {1}'.format(_, fib_lru(_)))
-    end = perf_counter()
-    print('Time taken = {0:.6f}'.format(end-start))
-    print()
+if __name__ == '__main__':
+    for _ in range(35, 40):
+        start = perf_counter()
+        print('fib({0}) = {1}'.format(_, fib(_)))
+        end = perf_counter()
+        print('Time taken = {0:.6f}'.format(end-start))
+        print()

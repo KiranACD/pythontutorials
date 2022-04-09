@@ -1,4 +1,6 @@
+# study how singledispatch fro functools work
 from html import escape
+from functools import singledispatch
 
 def singledispatch(fn):
 

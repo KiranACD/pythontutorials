@@ -19,7 +19,7 @@ def html_list(arg):
     return '<ul>\n' + '\n'.join(items) + '\n</ul>'
 
 def html_dict(arg):
-    items = (f'<li>{k} = {html_escape(v)}</li>' for k,v in arg.items())
+    items = (f'<li>{html_escape(k)} = {htmlize_fn(v)}</li>' for k,v in arg.items())
     return '<ul>\n' + '\n'.join(items) + '\n</ul>'
 
 def htmlize_fn(arg):

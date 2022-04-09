@@ -27,3 +27,18 @@ c = 1, 2, 3
 print(c, id(c))
 c = c + (4, 5)
 print(c, id(c))
+
+print()
+
+london = ('London', 'UK', 100)
+new_york = ('New York', 'US', 150)
+beijing = ('Beijing', 'China', 500)
+
+cities = [london, new_york, beijing]
+
+print ('Using enumerate, we can get the index as well.')
+for index, city in enumerate(cities):
+    print(f'index = {index}, city = {city}')
+
+print()
+print('Unpacking the tuple at the or oo')

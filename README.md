@@ -1,1 +1,1 @@
-Collection of python tutorials!
+# Collection of my notes on Python #

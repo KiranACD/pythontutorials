@@ -13,3 +13,6 @@ print(globals())
 print(sys.modules['math'])
 print(fractions.__file__)
 print(fractions.__dict__['__file__'])
+
+print('Python looks for modules in the paths shown in sys.path')
+print(sys.path)

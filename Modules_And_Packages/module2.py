@@ -1,9 +1,9 @@
-# module2.py
-print('Running module2.py')
+# module2.py    
+print('Running module2')
 
 def pprint():
 
-    print('Module2 says hello.')
+    print('Module2 says hello!')
 
 
 

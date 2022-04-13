@@ -78,6 +78,15 @@ class Polygon:
             points = [Point(*pt) for pt in pts]
             self._pts += points
     
+    def __delitem__(self, s):
+        del self._pts[s]
+    
+    def pop(self, i):
+        return self._pts.pop(i)
+    
+    def clear(self):
+        self._pts.clear()
+    
 
 if __name__ == '__main__':
     p1 = Point(1, 2)

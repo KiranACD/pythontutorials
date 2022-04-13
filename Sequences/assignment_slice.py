@@ -21,3 +21,4 @@ print(f'{l} now has id {id(l)}')
 l[0:7:2] = 'abcd'
 print("l[0:7:2] = 'abcd'")
 print(f'{l} now has id {id(l)}')
+

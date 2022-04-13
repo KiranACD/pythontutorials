@@ -1,5 +1,6 @@
 from copy import copy, deepcopy
 
+# deepcopy is used to copy any object that has mutiple layers of other object within it.
 # ways to shallow copy
 
 l1 = [1, 2, 3]
@@ -32,3 +33,4 @@ tuple_b = tuple(a)
 print(f'id(tuple_a) = {id(tuple_a)}, id(tuple_b) = {id(tuple_b)}')
 
 print()
+

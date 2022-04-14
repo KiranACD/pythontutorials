@@ -68,7 +68,8 @@ if __name__ == '__main__':
         circle = Circle(r)
         print(f'Area of {circle} =  {circle.area}')
     
-
+    # fact here is an iterable. We are not going use a for loop over it because its iterator...
+    # ...has not implemented the stop iteration.
     fact = Factorials()
     fact_iter = iter(fact)
     for _ in range(11):

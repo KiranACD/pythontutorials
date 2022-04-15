@@ -1,4 +1,3 @@
-from ast import Starred
 import math
 from project1 import Polygon
 

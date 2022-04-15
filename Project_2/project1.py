@@ -105,3 +105,32 @@ class Polygon:
             return self.edges > other.edges
         else:
             raise TypeError('Object being compared not instance of Polygon')
+
+if __name__ == '__main__':
+
+    try:
+        p1 = Polygon(1, 5)
+    except Exception as e:
+        print(e)
+    
+    try:
+        p2 = Polygon(3, 5)
+    except Exception as e:
+        print(e)
+    
+    print(p2.interior_angle)
+    print(p2.area)
+    print(p2)
+
+    try:
+        p3 = Polygon(3, 5)
+    except Exception as e:
+        print(e)
+    
+    try:
+        p4 = Polygon(4, 5)
+    except Exception as e:
+        print(e)
+    
+    print(f'Is {p2} equal to {p3}? {p2 == p3}')
+    print(f'Is {p2} > {p4}? {p2 > p4}')

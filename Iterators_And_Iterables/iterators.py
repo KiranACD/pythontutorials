@@ -14,7 +14,7 @@ class Squares:
     
     # Implementing the sequence protocol
     def __getitem__(self, s):
-        return self.__numbers[s] ** 2
+        return self.__numbers[s] **2
 
     class SquaresIterator:
 

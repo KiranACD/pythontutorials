@@ -24,10 +24,10 @@ Lets print out their references...
 <module 'math' (built-in)>
 <module 'fractions' from '/usr/lib/python3.8/fractions.py'>
 ```
-Math is a type module with name 'math' and it is a built-in module. Likewise, fractions is also a type module with name 'fractions' and its location is shown as '/usr/lib/python3.8/fractions.py'. Fractions is from the standard library. Standard libraries are very written in Python, so you get *.py files, sometimes written in C, whereas the built-in modules are written in C and are built-in to the python language. 
+Math is a type module with name 'math' and it is a built-in module. Likewise, fractions is also a type module with name 'fractions' and its location is shown as '/usr/lib/python3.8/fractions.py'. Fractions is from the standard library. Standard libraries are usually written in Python, so you get *.py files, but some are written in C. They are located in the lib folder as we saw above. Built-in modules are usually written in C and are built-in to the python language.
 
 A high level view into what happends when you import math or fractions,
-- First, python looks for it in the sys modules. If it finds the module, then there is no need to load it again.  
+- First, python looks for it in the sys modules. If it finds the module, then there is no need to load it again and the existing object is returned. 
 - If it does not find it in the sys modules, Python creates a new module object (`types.ModuleType`). It then loads the source code from the file.
 - It, then, adds it to the `sys.modules` with name as key. For e.g., you can access the math object using `sys.modules['math']`.
 - It also compiles and executes the module code.
@@ -104,7 +104,7 @@ sys.modules[module_name] = mod
 code = compile(source_code, filename=module_abs_file_path, mode='exec')
 
 # Execute the compiled code. We will put all the variables and function objects in the...
-# ... module namespace into the mod dictionary. This will enable us to use mod.pprint() which...
+# ... module namespace into the mod dictionary. This will enable us to use mod.pprint() which..
 # ... is a function in module.py.
 exec(code, mod.__dict__)
 

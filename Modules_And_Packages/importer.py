@@ -4,6 +4,9 @@ import sys
 
 def import_(module_name, module_file, module_path):
 
+    if module_name in sys.modules:
+        return sys.modules[module_name]
+
     module_rel_file_path = os.path.join(module_path, module_file)
 
     # Get the absolute path to put into the file attribute of the module object

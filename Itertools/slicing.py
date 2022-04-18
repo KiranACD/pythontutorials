@@ -20,3 +20,7 @@ print(list(islice(factorials(10), 3, 10, 2)))
 
 # This will give values upto the 5th factorial.
 print(list(islice(factorials(10), 5)))
+
+# If you pass an iterator into islice, it will be consumed before islice can return values.
+# islice itself is a lazy iterator.
+

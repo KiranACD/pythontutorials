@@ -27,7 +27,6 @@ def date_parser(item, *, format = '%Y-%m-%dT%H:%M:%SZ'):
     try:
         return datetime.datetime.strptime(item, format)
     except ValueError as e:
-        print(e)
         return None
 
     

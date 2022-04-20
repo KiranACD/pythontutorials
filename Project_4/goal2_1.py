@@ -64,3 +64,5 @@ class CombinedTupleCreator:
     def yield_filtered_tuple(self):
         info_gen = self.compress_and_yield_tuple()
         yield from filter(self.filter_key, info_gen)
+
+    

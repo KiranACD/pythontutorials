@@ -5,9 +5,9 @@ import os.path
 from goal1 import PersonalDetails, Employment, Vehicles, UpdateStatus
 
 class AllInfo:
-    def __init__(self, files, *, stale_date=None):
+    def __init__(self, files, *, filter_key=None):
         
-        self.stale_date = stale_date
+        self.filter_key = filter_key
         self.files = files
         self.create_tuple()
     
@@ -19,7 +19,10 @@ class AllInfo:
         self.Info = namedtuple('Info', self.headers)
     
     def __iter__(self):
-        return self.get_info()
+        if self.filter_key:
+            return self.filtered_get_info()
+        else:
+            return self.get_info()
     
     def get_all_vals(self, group):
         values = []
@@ -31,19 +34,8 @@ class AllInfo:
             n_tuple = zip(fields, n_tuple)
             for t in n_tuple:
                 if t[0] == 'ssn':
-                    continue
-                if t[0] == 'last_updated':
-                    if self.stale_date:
-                        if t[1].date() < self.stale_date:
-                            # print(t)
-                            values.append(None)
-                        else:
-                            values.append(t[1])
-                    else:
-                        values.append(t[1])
-                    continue                                  
+                    continue                              
                 values.append(t[1])
-        # print(values)
         return values if all(values) else None
 
     def get_info(self):        
@@ -53,6 +45,10 @@ class AllInfo:
         for val in vals:
             if val:
                 yield self.get_tuple(val)
+
+    def filtered_get_info(self):
+        data = self.get_info()
+        yield from filter(self.filter_key, data)
 
     def get_tuple(self, val):
         # print(val)
@@ -74,8 +70,8 @@ if __name__ == '__main__':
 
     files = tuple([d[key](key) for key in d])
     
-    info = AllInfo(files, stale_date=datetime.date(2017, 3, 1))
+    info = AllInfo(files, filter_key = lambda x: x.last_updated >= datetime.datetime(2017, 3, 1))
     print(info.headers)
-    list(info)
+    print(list(info))
     # print(list(itertools.islice(info, 5)))
     # print(info.groups)

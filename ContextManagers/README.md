@@ -193,3 +193,33 @@ for row in reader:
 
 Of course, we could return a list from the read_data() function instead of an iterator, but that defeats the purpose of using a lazy iterator.
 
+### Combining iterator protocol and context manager protocol
+
+```
+class DataIterator:
+    def __init__(self, fname):
+        self._fname = fname
+        self._f = None
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        row = next(self._f)
+        return row.strip('\n').split(',')
+    
+    def __enter__(self):
+        self._f = open(self._fname)
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        if not self._f.closed:
+            self._f.close()
+    
+        return False
+
+# Implement it like this
+with DataIterator('ContextManagers/nyc_parking_tickets_extract.csv') as data:
+    for row in data:
+        print(row)
+```

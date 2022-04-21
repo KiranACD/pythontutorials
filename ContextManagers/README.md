@@ -62,7 +62,7 @@ Making a small detour, finally block always runs, even when the return statement
 
 ### Motivations
 
-Thought process explained in PEP 343
+Thought process explained in [PEP 343](https://peps.python.org/pep-0343/)
 
 ### Pattern
 

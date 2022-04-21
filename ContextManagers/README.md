@@ -2,7 +2,7 @@
 
 ## What is a context?
 
-It is the state of things when running a section of the code. Consider this piece of code.
+It is the state of things when running a section of the code. Consider this piece of code:
 
 ```
 # module.py
@@ -19,7 +19,7 @@ f = open('test.txt', 'r')
 perform_work(f)
 f.close()
 ```
-If there is an exception before we close the file, the file remains open. We need to manage the context that perform_work(f) needs without causing dsruption.
+If there is an exception before we close the file, the file remains open. We need to manage the context that perform_work(f) needs without causing disruption.
 
 We can write it like this
 ```
@@ -79,4 +79,36 @@ with context as obj_name: # with open(file) as f:  Here context is created by op
 # close the file automatically
 ```
 ### Context management protocol
+
+Classes implement the context manager protocol by implementing two methods:
+- __enter__ - setup and optionally return an object
+- __exit__  - teardown/cleanup
+
+This
+```
+with CtxManager() as obj:
+    do_something()
+# done
+```
+is the same as writing this piece of code
+```
+mgr = CtxManager()
+obj = mgr.__enter__()
+try:
+    do_something()
+finally:
+    mgr.__exit__()
+```
+The above example is oversimplified as there is no exception handling there.
+
+### Use Cases
+
+- Creating a resource (opening a file) and releasing the resource (closing the file)
+  A.k.a Open-Close
+- Lock - Release (like lock a thread)
+- Change - Reset (change the state of class and then reset, or changing precision of decimals)
+- Start - Stop (Timer, or writing data to a stream and stop)
+- Enter - Exit
+
+
 

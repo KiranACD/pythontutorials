@@ -2,3 +2,4 @@ virtualenv/
 venv/
 .vscode/
 __pycache__
+*.txt

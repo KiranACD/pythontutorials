@@ -110,6 +110,21 @@ What happens if an exception occurs inside the with block? The __exit__ method i
   A.k.a Open-Close. Another example is open a socket, operate on socket, close socket
 - Lock - Release (like lock a thread)
 - Change - Reset (change the state of class and then reset, or changing precision of decimals)
+```
+class precision:
+    def __init__(self, prec):
+        self.prec = prec
+        self.current_prec = decimal.getcontext().prec
+
+    def __enter__(self):
+        decimal.getcontext().prec = self.prec
+    
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        decimal.getcontext().prec = self.current_prec
+
+with precision(3):
+    print(decimal.Decimal(1) / decimal.Decimal(3))
+```
 - Start - Stop (Timer, or writing data to a stream and stop, start db transaction, perform db operations, commit or rollback transaction)
 - Enter - Exit
 - Wacky stuff
@@ -256,3 +271,54 @@ with DataIterator('data_file.csv') as data:
     for row in data:
         print(row)
 ```
+### Mimic context manager pattern using a generator
+
+```
+def open_file(fname, mode):
+    f = open(fname, mode)
+    try:
+        yield f
+    finally:
+        f.close()
+
+ctx = open_file('file.txt', 'r)
+f = next(ctx) # Opens file and yields it
+next(ctx # closes the file)
+```
+The better way of writig the above function:
+```
+ctx = open_file('file.txt', 'r'):
+f = next(ctx)
+try:
+    do_work_with_file()
+finally:
+    try:
+        next(ctx)
+    except StopIteration:
+        pass
+```
+How it works in general is:
+```
+def gen(args):
+    #  do set up work here
+
+    try:
+        yield object
+    finally:
+        # clean up object here
+
+ctx = gen(args)
+obj = next(ctx)
+
+try:
+    do_with obj()
+finally:
+    try:
+        next(ctx)
+    finally:
+        try:
+            next(ctx)
+        except StopIteration:
+            pass
+```
+This is still clunky. 

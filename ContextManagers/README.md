@@ -86,20 +86,23 @@ Classes implement the context manager protocol by implementing two methods:
 
 This
 ```
-with CtxManager() as obj:
+with CtxManager() as obj: # instance of the class is created but there is no associated
+                          # symbol. 
     do_something()
 # done
 ```
 is the same as writing this piece of code
 ```
 mgr = CtxManager()
-obj = mgr.__enter__()
+obj = mgr.__enter__() # Return value from enter is assigned to obj
 try:
     do_something()
 finally:
     mgr.__exit__()
 ```
 The above example is oversimplified as there is no exception handling there.
+
+What happens if an exception occurs inside the with block? The __exit__ method is called.
 
 ### Use Cases
 
@@ -110,5 +113,83 @@ The above example is oversimplified as there is no exception handling there.
 - Start - Stop (Timer, or writing data to a stream and stop)
 - Enter - Exit
 
+### Scope of with block
 
+The with block is not like a function or a comprehension. It does not have its own local scope. The scope of anything in the with block is in the same scope as the with statement itself.
+
+```
+with open(file) as f:
+    row = next(f) # Both f and row are in the global scope
+print(f)
+print(row)
+```
+However, the file will be closed when we come out of the with block.
+
+### The __enter__ method
+
+`def __enter__(self):` - signature
+This method should perform what you want to be done when you enter a context. It can optionally return an object. It can also return None.
+
+### The __exit__ method
+
+This should always run even if an exception occurs in the `with` block. But, should it be able identify if an exception occured? Yes. And it needs to know whether to let the exception propogate or whether to silence it.
+
+For example
+```
+with Context() as obj:
+    raise ValueError # some error
+print('done')
+```
+- Scenario 1
+
+__exit__ method receives the error, performs some clean up and silences the error. No exception seen.
+
+- Scenario 2
+
+__exit__ method receives the error, performs the clean up ad lets the error propogate. ValueError is seen.
+
+It needs three arguments:
+
+- the exception type that occured(if any, None otherwise)
+- the exception value that occurred(if any, None otherwise)
+- the traceback object if an exception occurred(if any, None otherwise)
+
+Return True or False. If True, silence any raised exception. If False, do not silence a raised exception.
+
+What __exit__method needs to look like
+```
+def __exit__(self, exc_type, exc_value, exc_trace):
+    do_cleanup()
+    return True # or False
+```
+
+### Caveat with lazy iterators
+
+Consider this piece of code:
+```
+import csv
+
+def read_data():
+    with open('file.csv') as f:
+        return csv.reader(f, delimiter=',', quotechar='"')
+
+reader = read_data()
+for row in reader:
+    print(row)
+```
+What do you think will happen? It is going to raise an exception as the file has been closed. 
+This is why we cannot return a file iterator from a context managers and hence we need to write it as:
+```
+import csv
+
+def read_data():
+    with open('file.csv') as f:
+        yield from csv.reader(f, delimiter=',', quotechar='"')
+
+reader = read_data()
+for row in reader:
+    print(row)
+```
+
+Of course, we could return a list from the read_data() function instead of an iterator, but that defeats the purpose of using a lazy iterator.
 

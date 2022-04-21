@@ -20,6 +20,6 @@ class DataIterator:
     
         return False
 
-with DataIterator('ContextManagers/nyc_parking_tickets_extract.csv') as data:
+with DataIterator('ContextManagers/Data/nyc_parking_tickets_extract.csv') as data:
     for row in data:
         print(row)

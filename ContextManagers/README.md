@@ -219,7 +219,7 @@ class DataIterator:
         return False
 
 # Implement it like this
-with DataIterator('ContextManagers/nyc_parking_tickets_extract.csv') as data:
+with DataIterator('data_file.csv') as data:
     for row in data:
         print(row)
 ```

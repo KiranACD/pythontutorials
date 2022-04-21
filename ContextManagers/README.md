@@ -10,7 +10,7 @@ f = open('test.txt', 'r')
 print(f.readlines())
 f.close()
 ```
-When `print(f.readlines())` runs, it has a context in which it runs, which is the global scope. If the piece of code is in a functions, then the context in which is runs is the local scope. 
+When `print(f.readlines())` runs, it has a context in which it runs, which is the global scope. If the piece of code is in a function, then the context in which is runs is the local scope. 
 
 ## Managing the context
 
@@ -107,11 +107,44 @@ What happens if an exception occurs inside the with block? The __exit__ method i
 ### Use Cases
 
 - Creating a resource (opening a file) and releasing the resource (closing the file)
-  A.k.a Open-Close
+  A.k.a Open-Close. Another example is open a socket, operate on socket, close socket
 - Lock - Release (like lock a thread)
 - Change - Reset (change the state of class and then reset, or changing precision of decimals)
-- Start - Stop (Timer, or writing data to a stream and stop)
+- Start - Stop (Timer, or writing data to a stream and stop, start db transaction, perform db operations, commit or rollback transaction)
 - Enter - Exit
+- Wacky stuff
+```
+with tag('p'):
+    print('some text', end='')
+
+with tag('p'):
+    print('some', end='')
+    with tag('b'):
+        print('bold', end='')
+    print('text', end='')
+```
+Another example:
+```
+with ListMaker(title='Items', prefix='-', indent=3, stdout='myfile.txt') as lm:
+    lm.print('Item1')
+    with lm:
+        lm.print('item 1a')
+        lm.print('item 1b')
+    lm.print('Item2')
+    with lm:
+        lm.print('item 2a')
+        lm.print('item 2b')
+```
+The output, written into myfile.txt will look like
+```
+Items
+    - Item1
+        - item 1a
+        - item 1b
+    - Item2
+        - item 2a
+        - item 2b
+```
 
 ### Scope of with block
 

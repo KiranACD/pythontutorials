@@ -281,13 +281,13 @@ def open_file(fname, mode):
     finally:
         f.close()
 
-ctx = open_file('file.txt', 'r)
+ctx = open_file('file.txt', 'r) # Generator object
 f = next(ctx) # Opens file and yields it
-next(ctx # closes the file)
+next(ctx) # closes the file and generates a StopIteration exception
 ```
-The better way of writig the above function:
+The way we would implement the above for doing some work with the file:
 ```
-ctx = open_file('file.txt', 'r'):
+ctx = open_file('file.txt', 'r') # Generator object
 f = next(ctx)
 try:
     do_work_with_file()
@@ -297,7 +297,7 @@ finally:
     except StopIteration:
         pass
 ```
-How it works in general is:
+In general, this is the way to set up generator functions to mimic context managers.
 ```
 def gen(args):
     #  do set up work here
@@ -311,14 +311,113 @@ ctx = gen(args)
 obj = next(ctx)
 
 try:
-    do_with obj()
+    do_work_with_obj()
 finally:
     try:
         next(ctx)
-    finally:
-        try:
-            next(ctx)
-        except StopIteration:
-            pass
+    except StopIteration:
+        pass
 ```
-This is still clunky. 
+This is still clunky. Although the general pattern is to yield using try and clean up using finally.
+
+Let's write a class to create a context manager from a generator function.
+```
+class GenContext:
+    def __init__(self, gen): # The gen is the generator object from the generator function
+        self.gen = gen
+    
+    def __enter__(self):
+        obj = next(self.gen)
+        return obj
+    
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        next(self.gen) # runs the finally block.
+        return False
+```
+What we yield in the generator function is what we want to be returned from the enter function in the context manager.
+
+Why we put the yield code inside the try/finally, we can find out in the coroutines section.
+
+This becomes a neat way to implement the above generator function. But we still have to create the generator object and pass it to the context manager class. We can pass the generator function reference itself along with *args and **kwargs to handle function arguments.
+
+```
+class GenContext:
+    def __init__(self, gen_func, *args, **kwargs):
+        self._gen = gen_func(*args, **kwargs)
+```
+
+To use this functionality, we have to call GenContext(...), which lacks clarity. For e.g., when we use `with open(file) as f`, we know exactly what we are doing. 
+
+```
+with GenContext(gen, args) as obj:
+    do_something_with_obj()
+```
+We can use a decorator to fix this.
+
+### Context manager decorator
+
+We use the same generator function we created earlier
+```
+def gen(*args, **kwargs):
+    #  do set up work here
+
+    try:
+        yield object
+    finally:
+        # clean up object here
+```
+And we have the same context manager class as earlier:
+```
+class GenContext:
+    def __init__(self, gen): # The gen is the generator object from the generator function
+        self.gen = gen
+    
+    def __enter__(self):
+        obj = next(self.gen)
+        return obj
+    
+    def __exit__(self, exc_type, exc_value, exc_tb):
+        next(self.gen) # runs the finally block.
+        return False
+```
+Now, we make a decorator function as follows:
+```
+def context_decorator(gen_func):
+    def helper(*args, **kwargs):
+        gen = gen_func(*args, **kwargs)
+        return GenContext(gen)
+    return helper
+```
+All we have to do now is the rewrite our generator function and decorate it.
+```
+@context_decorator
+def gen(*args, **kwargs):
+    #  do set up work here
+
+    try:
+        yield object
+    finally:
+        # clean up object here
+```
+And now, we can use:
+```
+with gen(*args, **kwargs) as obj:
+    do_something_with_obj()
+```
+which is what we wanted.
+
+Now, Python provides all this through the contextlib.contextmanager decorator that can be used to turn a generator to a context manager. 
+
+One of the goals when context managers were introduced to Python was to ensure generator functions could be used to easily create them.
+
+Thought process explained in [PEP 343](https://peps.python.org/pep-0343/)
+
+Something that we have not done is exception handling. If an exception occurs in this with block, it needs to be propogated back to the generator function.
+
+So, what does the __exit__ method require? It needs to know about the excpetion that occured, so that we could do something about it, if we wanted to. To propogate this back to the generator, we need to look at enhanced generators as coroutines.
+
+But this is the general approach to creating a context manager from the generator function.
+
+
+### Contextlib - redirect_stdout
+

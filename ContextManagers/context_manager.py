@@ -106,8 +106,9 @@ class File:
         self.file.close()
         return False
 
-with File('ContextManagers/test.txt', 'w') as f:
-    f.write('This is a late parrot!')   
+# with File('ContextManagers/test.txt', 'w') as f:
+#     f.write('This is a late parrot!')   
 
-with File('ContextManagers/test.txt', 'r') as f:
-    print(f.readlines())
+# with File('ContextManagers/test.txt', 'r') as f:
+#     print(f.readlines())
+

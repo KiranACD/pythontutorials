@@ -277,3 +277,195 @@ averager.send(10) # yields the running_average = 10
 averager.send(20) # yields the running_average = 15
 averager.send(30) # yields the running_average = 20
 ```
+
+### Closing Generators
+
+Consider this generator function to read files:
+```
+def read_file(fname):
+    f = open(fname)
+    try:
+        for row in f:
+            yield row
+    finally:
+        f.close()
+
+rows = read_file('test.txt')
+for _ in range(10):
+    next(rows)
+```
+We read only 10 rows of the file, so the generator never closes the file and hence it remains open. How do we close the file without iterating through the entire file?
+
+We want to be able to go from GEN_SUSPENDED to GEN_CLOSED from the caller. Generators have a close method. So when we run `rows.close()`, the `finally` block executes and the file is closed.
+
+The only way for the program to exit out of the loop and reach the `finally` block is when an exception occurs. A `GeneratorExit` exception is triggered inside the generator. This is similar to the StopIteration exception. These exceptions are used to control the flow of things.
+
+You can catch the `GeneratorExit` exception like this:
+```
+def gen():
+    try:
+        yield 1
+        yield 2
+    except GeneratorExit:
+        print('Generator close called')
+    finally:
+        print('Clean up here')
+
+g = gen()
+next(g)
+g.close()
+```
+Python's expectations when `close()` is called.
+
+- a GeneratorExit eception bubbles up
+```
+def parse_file(fname):
+    f = open(fname, 'r')
+    try:
+        reader = csv.reader(f)
+        for row in reader:
+            yield row
+    finally:
+        f.close()
+
+parser = parse_file(fname)
+for row in itertools.islice(parser, 10)
+    print(row)
+```
+We let the `GeneratorExit` exception bubble up, and Python will silence it.
+- the generator exits cleanly (returns)
+```
+def parse_file(fname):
+    f = open(fname, 'r')
+    try:
+        reader = csv.reader(f)
+        for row in reader:
+            try:
+                yield row
+            except GeneratorExit:
+                print('ignoring GeneratorExit')
+                return # Exiting hhe generator cleanly
+    finally:
+        f.close()
+
+parser = parse_file(fname)
+for row in itertools.islice(parser, 10)
+    print(row)
+```
+
+The exception that happens is silenced by Python, which means the caller will not see the exception. It is perfecty okay to not catch the `GeneratorExit` exception. It will be silenced by Python like the `StopIteration` exception.
+
+You can catch the `GeneratorExit` exception and raise another exception and that can be seen by the caller.
+
+You cannot catch the `GeneratorExit` exception, then ignore it and continue to yield values. In this case, Python will raise a `RuntimeError: generator ignored GeneratorExit`.
+For e.g.
+```
+def parse_file(fname):
+    f = open(fname, 'r')
+    try:
+        reader = csv.reader(f)
+        for row in reader:
+            try:
+                yield row
+            except GeneratorExit:
+                print('ignoring GeneratorExit')
+    finally:
+        f.close()
+```
+Since coroutines are generator functions, it is okay to close a coroutine as well. For e.g., consider a coroutine that receives data to write to a database
+
+- coroutine opens a transaction when it is primed
+- coroutine receives data to write to the database
+- coroutine commits the transaction when `close()` is called (`GeneratorExit`)
+- coroutine aborts (rolls back) transaction if some other exception occurs
+
+In the Python 3.8 version, at the end of a loop iterating over a generator, the `GeneratorExit` is automatically called. We dont need to call the `close` method.
+```
+def parse_file(fname):
+    f = open(fname, 'r')
+    try:
+        reader = csv.reader(f)
+        for row in reader:
+            yield row
+    finally:
+        f.close()
+
+parser = parse_file(fname)
+for row in itertools.islice(parser, 10)
+    print(row)
+# End of loop, file is closed
+```
+
+Catching other exceptions that occur in the generator function
+```
+def save_to_db():
+    print('starting new transaction')
+    while True:
+        try:        
+            data = yield
+            print('sending data to database: ', eval(data)) # eval used to create an exception
+                                                            # we can catch 
+        except Exception:
+            print('aborting transaction') # Doing this leaves the generator in a 
+                                          # suspended state
+        except GeneratorExit:
+            print('committing transaction')
+            raise # Letting the generator exeption bubble back up
+```
+Once the abort takes place, we need to do two things:
+
+- Abort the transaction and rollback
+- Close the generator/coroutine
+
+It would be safer to have a `finally` block there too.
+```
+def save_to_db():
+    print('starting new transaction')
+    is_abort = False
+    try:
+        while True:        
+            data = yield
+            print('sending data to database: ', eval(data))
+    except Exception as ex:
+        is_abort = True
+        raise
+    finally:
+        if is_abort:
+            print('rollback transaction')
+        else:
+            print('commit transaction')
+```
+
+### Sending Exceptions to Generators
+
+We have seen ways to:
+
+- `gen.send(data)` - sends data to coroutine
+- `gen.close()` - sends (throws) a `GeneratorExit` exception to coroutine
+
+We can also send (throw) any exception to the coroutine.
+
+`gen.throw(exception)` - the exception is raised at the point where the coroutine is suspended.
+
+How is `gen.throw()` handled?
+
+- generator does not catch the exception (does nothing). The exception propogates to the caller.
+- generator catches the exception and does something like:
+    - yield a value (ignore the exception) 
+    - exits (returns)
+    - raise a different exception that will propogate back up to the caller
+
+#### Catch and Yield
+
+- generator catches the exception
+- handles and silences the exception and yields a value
+- yielded value is the return value of the `gen.throw()` method
+```
+def gen():
+    while True:
+        try:
+            received = yield
+            print(received)
+        except ValueError:
+            print('silencing ValueError') # The loop continues back here
+``` 

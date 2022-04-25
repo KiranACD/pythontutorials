@@ -467,5 +467,94 @@ def gen():
             received = yield
             print(received)
         except ValueError:
-            print('silencing ValueError') # The loop continues back here
-``` 
+            print('silencing ValueError') # The loop continues from back here
+                                          # So the gen.throw() will return what is yielded.
+```
+#### Catch and Exit
+
+- generator catches the exception
+- generator exits (returns)
+
+Caller receives the `StopIteration` exception. This is the same as calling `next()` or `send()` to a generator that returns instead of yielding. The generator is now closed.
+
+gen.thow() sends exception while gen.send() sends data.
+```
+def gen():
+    while True:
+        try:
+            received = yield
+            print(received)
+        except ValueError:
+            print('silencing ValueError') 
+            return None # StopIteration exception seen by the caller, not the ValueError
+```
+#### Catch and Raise Different Exception
+
+- generator catches the exception
+- generator handles it and raises another exception
+- new exception propogates to the caller. Generator is now closed.
+```
+def gen():
+    while True:
+        try:
+            received = yield
+            print(received)
+        except ValueError:
+            print('silencing ValueError') 
+            raise CustomException # seen by the caller
+```
+What happens when we call `gen.throw(GeneratorExit())`. To answer this, we need to revisit what happens when we call `gen.close()`. Python expects the `GeneratorExit` or `StopIteration` exceptions to propogate and silences it for the caller. However, when `gen.throw(GeneratorExit())` is called, `GeneratorExit` exception is raised inside the caller context (if the generator lets it). If you then want to silence it:
+
+```
+def gen():
+    try:
+        while True:
+            received = yield
+            print(received)
+    finally:
+        print('closing down')
+
+try:
+    g = gen()
+    g.throw(GeneratorExit()) # This will propogate a GeneratorExit back to the caller.
+except GeneratorExit:
+    pass
+```
+However, if we catch the `GeneratorExit` exception in generator function, when we excute `g.throw(GeneratorExit()), it will be caught in thee generator function, but the StopIteration exception is raised at the caller. 
+
+We can also use custom exception type to control the flow. For e.g.
+
+```
+class CommitException(Exception):
+    pass
+
+class RollBackException(Exception):
+    pass
+
+def write_to_db():
+    print('Opening db connection')
+    print('start transaction')
+    try:
+        while True:
+            try:
+                data = yield
+                print('writing data to database...', data)
+            except CommitException:
+                print('Commiting transaction...')
+                print('opening next transaction')
+            except RollBackException:
+                print('aborting transaction')
+                print('opening new transaction')
+    finally:
+        print('generator closing...')
+        print('abort transaction...')
+        print('closing db connction')
+
+sql = write_to_db()
+next(sql)
+sql.send(100)
+sql.throw(CommitException)
+sql.send(300)
+sql.throw(RollBackException)
+sql.close()
+```

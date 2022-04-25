@@ -190,3 +190,90 @@ def coordinator():
 ```
 
 ### Generator States
+
+Let's look at a generator implementation.
+```
+def my_gen(fname):
+    f = open(fname)
+    try:
+        for row in f:
+            yield row.split(',')
+    finally:
+        f.close()
+
+# Create Generator
+rows = my_gen(fname) # Generator is created. Nothing starts running yet.
+
+# Run Generator
+next(rows) # This runs until it sees the yield statement and then suspends.
+           # Or, the generator exists, either from the try block due to error or
+           # the iteration finishes. Then the generator is closed.
+```
+
+#### Inspecting a generator's state
+
+The four states are:
+
+- GEN_CREATED
+- GEN_RUNNING
+- GEN_SUSPENDED
+- GEN_CLOSED
+
+```
+from inspect import getgeneratorstate
+g = my_gen(fname)
+getgeneratorstate(g) # This returns GEN_CREATED
+row = next(g) # This returns GEN_SUSPENDED
+lst(g) # This iterates through the generator until it is done. 
+getgenerator(g) # This return GEN_CLOSED
+
+# If you call getgenerator(g) from inside the generator when it is running, you get GEN_RUNNING
+```
+It is difficult to get the GEN_RUNNING state because the generator code does not know what the generator object is. However, when we create the generator state, g becomes a global variable. So when we call `getgeneratorstate(g)` from inside the genrator code, then it returns GEN_RUNNING.
+
+### Sending Data to Generators
+
+So far, we saw:
+
+- how yield can produce values. Use next() to get the produced values.
+- After a value is yielded, the generator is suspended.
+
+Can we send data to the generator upon resumption?
+
+Until now, we have been using yield as a statement. But yield is an expression which returns a value. So we can write `received = yield`. 
+
+Where is the value going to come from? It is going to come from outside the generator.
+So we can actually write `received = yield 'hello'`
+
+For e.g.
+```
+def gen_echo():
+    while True:
+        received = yield
+        print('You said: ', received)
+        break
+
+echo = gen_echo() # GEN_CREATED
+next(echo) # GEN_SUSPENDED
+echo.send('hello') # This works only when gen is suspended
+```
+As the send method works only when the generator is suspended, we have to prime the generator to get it into the GEN_SUSPENDED state.
+
+Lets revist the averager generator function that we used earlier to describe cooperative coroutines.
+```
+def running_averager()
+    total = 0
+    count = 0
+    running_average = None
+    while True:
+        value = yield running_average
+        total += value
+        count += 1
+        running_average = total/count
+
+averager = running_averager()
+next(averager)
+averager.send(10) # yields the running_average = 10 
+averager.send(20) # yields the running_average = 15
+averager.send(30) # yields the running_average = 20
+```

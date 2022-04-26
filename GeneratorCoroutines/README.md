@@ -558,3 +558,214 @@ sql.send(300)
 sql.throw(RollBackException)
 sql.close()
 ```
+### Using Decorators to Prime Coroutines
+
+We have to prime a coroutine before using it. It is repetitive and the pattern is the same everytime.
+```
+g = gen()
+next(g) # can also do g.send(None)
+```
+Creating a function to auto prime coroutines:
+```
+def prime(gen_fn):
+    g = gen_fn()
+    next(g)
+    return g
+
+def echo():
+    while True:
+        received = yield
+        print(received)
+
+echo_gen = prime(echo)
+echo_gen.send('hello')
+```
+We still have to call the prime function to prime the coroutine before using it. We can use a decorator to auto prime a coroutine for us when we create an instance of it.
+```
+def coroutine(gen_fn):
+    def prime(*args, **kwargs):
+        g = gen_fn(*args, **kwargs)
+        next(g) # or g.send(None)
+        return g
+    return prime
+
+@coroutine
+def echo():
+    while True:
+        received = yield
+        print(received)
+```
+In case an error occurs inside the generator function, the exception will bubble up and propogate to the caller who will see the exception. The generator will be close. If we want to silence any error, then we will have to catch it in the coroutine and silence it. 
+
+### Yield From
+
+#### 2-way Communication
+
+Lets consider a generator function called subgen:
+```
+def subgen():
+    for i in range(10):
+        yield i
+```
+We can consume the data from subgen in another generator this way:
+```
+def delegator():
+    for value in subgen():
+        yield value
+```
+or we could use yield from:
+```
+def delegator():
+    yield from subgen()
+```
+With either definition we can consume the generators this way:
+```
+d = delegator()
+next(d)
+```
+We send the `next` request to the delegator. The delegator passes along the request to subgen because of the `yield from`. The subgen yields a value and passes it to delegator which passes it back to the caller. 
+
+This is a 2-way communication. This means we can use `gen.send()`, `gen.close()` and `gen.throw()` too. 
+
+Let us take a look at how the delegator behaves when subgen returns. Lets assume these functions:
+```
+def subgen():
+    yield 1
+    yield 2
+
+def delegator():
+    yield from subgen()
+    yield 'subgen closed'
+```
+First we create an instance `d = delegator()`. Then
+
+- We call `next(d)` and the delegator passes the request to `subgen` which yields 1 and passes it to delegator, which then passes it back to the caller. The delegator then suspends itself at the yield from statement.
+- We call `next(d)` again and the same process repeats and we get 2.
+- When we call `next(d)` again, the delegator passes the request to subgen, but the subgen now returns None. This means a `StopIteration` exception which python silences and we move to the next line in delegator function and it yields 'subgen closed'. The generator subgen is now closed.
+- When we call `next(d)` then the delegator function returns None and `StopIteration` exception is raised at the caller.
+
+#### Send data to coroutine
+
+Lets send data to the coroutine using `yield from`. Consider the two functions:
+```
+def delegator():
+    yield from coro()
+
+def coro():
+    while True:
+        received = yield
+        print(received)
+```
+First we create an instance `d = delegator`. We can prime the delegator using `next(d)`. When we do this, the `yield from` will automatically prime the coroutine when necessary.
+
+Now that the coroutine and delegator is primed we can run `d.send('python')` and 'python' will be printed to the console.
+
+We have to remember that the delegator control remains at the `yield from` till the coro generator closes.
+
+We can create multiple delegators, effectively establishing a pipeline.
+```
+def coro():
+    yield 1
+    yield 2
+    yield 3
+
+def gen2():
+    yield from coro()
+
+def gen1():
+    yield from gen1()
+
+d = gen1()
+```
+#### Flatten List
+
+Suppose we want to flatten a list of lists to a single list. We have to use a recursive approach.
+```
+def flatten_print(curr_item):
+    if isinstance(curr_item, list):
+        for item in curr_item:
+            flatten_print(item)
+    else:
+        print(curr_item)
+
+def flatten_to_list(curr_item, output):
+    if isinstance(curr_item, list):
+        for item in curr_item:
+            flatten_to_list(item, output)
+    else:
+        output.append(curr_item)
+
+```
+First one prints the items one-by-one to the console. The second one appends it to the output
+
+However, in the second approach, we are passing the output around and appending values into it. If we are working with a large list, we will occupy a significant chunk of memory which might not be desirable. 
+
+Lets use generators to avoid storing the list in memory.
+
+```
+def is_iterable(item, *, str_is_iterable=True):
+    try:
+        iter(item)
+    except:
+        return False
+    else:
+        if isinstance(item, str):
+            if str_is_iterable and len(item) > 1:
+                return True
+            else:
+                return False
+        else:
+            return True
+
+def flatten_iterable(curr_item, *, str_is_iterable=False):
+    if is_iterable(curr_item, str_is_iterable=str_is_iterable):
+        for item in curr_item:
+            yield from flatten_iterable(item)
+    else:
+        yield(curr_item)
+```
+#### Closing the delegator and subgenerator
+
+Consider
+```
+def delegator():
+    yield from subgen()
+
+def subgen():
+    yield 1
+    yield 2
+
+d = delegator()
+```
+When the caller calls `next(d)`, a conduit is established between delegator and subgen. The delegator is effectively paused at the yield from till the subgen closes. Once subgen closes, delegator runs the rest of its code.
+
+We can get the handle of subgen from delegator and close it seperately. Then, the delegator continues with the rest of the code. When we execute `next(d)` then the delegator will yield if there is any subsequent yield statement or it will propogate the StopIteration exception back to the caller once it runs out of yield statments.
+
+When we run `d.close()`, it gets transmitted to the subgenerator and it closes. It will immediately close the delegator too. The StopIteration exception is silenced by python in this case.
+
+#### Returning from a subgenerator
+
+When we return from a generator, we get a StopIteration exception. If there is a return value, then it is embedded in the StopIteration exception. We can extract it by:
+```
+try:
+    next(g)
+except StopIteration as e:
+    print(e.value)
+```
+Python does this for us, so we dont have to. We can write as follows:
+```
+def subgen():
+    yield 1
+    yield 2
+    return 3
+
+def delegator():
+    result = yield from subgen() # result get the return value from subgen
+
+d = delegator()
+next(d) # estabishes connection and prints 1
+next(d) # prints 2
+next(d) # prints 3
+next(d) # StopItertion exception at the caller
+```
+

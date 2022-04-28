@@ -1,0 +1,31 @@
+Car,MPG,Cylinders,Displacement,Horsepower,Weight,Acceleration,Model,Origin
+Ford Torino,17.0,8,302.0,140.0,3449.0,10.5,70,US
+Ford Galaxie 500,15.0,8,429.0,198.0,4341.0,10.0,70,US
+Ford Torino (sw),0.0,8,351.0,153.0,4034.0,11.0,70,US
+Ford Mustang Boss 302,0.0,8,302.0,140.0,3353.0,8.0,70,US
+Ford F250,10.0,8,360.0,215.0,4615.0,14.0,70,US
+Ford Torino 500,19.0,6,250.0,88.0,3302.0,15.5,71,US
+Ford Galaxie 500,14.0,8,351.0,153.0,4154.0,13.5,71,US
+Ford Country Squire (sw),13.0,8,400.0,170.0,4746.0,12.0,71,US
+Ford Mustang,18.0,6,250.0,88.0,3139.0,14.5,71,US
+Ford Galaxie 500,14.0,8,351.0,153.0,4129.0,13.0,72,US
+Ford Gran Torino (sw),13.0,8,302.0,140.0,4294.0,16.0,72,US
+Ford Gran Torino,14.0,8,302.0,137.0,4042.0,14.5,73,US
+Ford LTD,13.0,8,351.0,158.0,4363.0,13.0,73,US
+Ford Maverick,18.0,6,250.0,88.0,3021.0,16.5,73,US
+Ford Country,12.0,8,400.0,167.0,4906.0,12.5,73,US
+Ford Pinto,19.0,4,122.0,85.0,2310.0,18.5,73,US
+Ford Gran Torino,16.0,8,302.0,140.0,4141.0,14.0,74,US
+Ford Gran Torino (sw),14.0,8,302.0,140.0,4638.0,16.0,74,US
+Ford Maverick,15.0,6,250.0,72.0,3158.0,19.5,75,US
+Ford LTD,14.0,8,351.0,148.0,4657.0,13.5,75,US
+Ford Mustang II,13.0,8,302.0,129.0,3169.0,12.0,75,US
+Ford Pinto,18.0,6,171.0,97.0,2984.0,14.5,75,US
+Ford Gran Torino,14.5,8,351.0,152.0,4215.0,12.8,76,US
+Ford Grenada ghia,18.0,6,250.0,78.0,3574.0,21.0,76,US
+Ford F108,13.0,8,302.0,130.0,3870.0,15.0,76,US
+Ford Grenada,18.5,6,250.0,98.0,3525.0,19.0,77,US
+Ford Thunderbird,16.0,8,351.0,149.0,4335.0,14.5,77,US
+Ford Futura,18.1,8,302.0,139.0,3205.0,11.2,78,US
+Ford LTD Landau,17.6,8,302.0,129.0,3725.0,13.4,79,US
+Ford Country Squire (sw),15.5,8,351.0,142.0,4054.0,14.3,79,US

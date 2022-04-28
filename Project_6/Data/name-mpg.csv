@@ -1,0 +1,46 @@
+Car,MPG,Cylinders,Displacement,Horsepower,Weight,Acceleration,Model,Origin
+Chevrolet Chevelle Malibu,18.0,8,307.0,130.0,3504.0,12.0,70,US
+Chevrolet Impala,14.0,8,454.0,220.0,4354.0,9.0,70,US
+Chevrolet Monte Carlo,15.0,8,400.0,150.0,3761.0,9.5,70,US
+Chevrolet Vega 2300,28.0,4,140.0,90.0,2264.0,15.5,71,US
+Chevrolet Chevelle Malibu,17.0,6,250.0,100.0,3329.0,15.5,71,US
+Chevrolet Impala,14.0,8,350.0,165.0,4209.0,12.0,71,US
+Chevrolet Vega (sw),22.0,4,140.0,72.0,2408.0,19.0,71,US
+Chevrolet Vega,20.0,4,140.0,90.0,2408.0,19.5,72,US
+Chevrolet Impala,13.0,8,350.0,165.0,4274.0,12.0,72,US
+Chevrolet Chevelle Concours (sw),13.0,8,307.0,130.0,4098.0,14.0,72,US
+Chevrolet Malibu,13.0,8,350.0,145.0,3988.0,13.0,73,US
+Chevrolet Caprice Classic,13.0,8,400.0,150.0,4464.0,12.0,73,US
+Chevrolet Nova Custom,16.0,6,250.0,100.0,3278.0,18.0,73,US
+Chevrolet Impala,11.0,8,400.0,150.0,4997.0,14.0,73,US
+Chevrolet Vega,21.0,4,140.0,72.0,2401.0,19.5,73,US
+Chevrolet Monte Carlo S,15.0,8,350.0,145.0,4082.0,13.0,73,US
+Chevrolet Nova,15.0,6,250.0,100.0,3336.0,17.0,74,US
+Chevrolet Vega,25.0,4,140.0,75.0,2542.0,17.0,74,US
+Chevrolet Chevelle Malibu Classic,16.0,6,250.0,100.0,3781.0,17.0,74,US
+Chevrolet Nova,18.0,6,250.0,105.0,3459.0,16.0,75,US
+Chevrolet Bel Air,15.0,8,350.0,145.0,4440.0,14.0,75,US
+Chevrolete Chevelle Malibu,16.0,6,250.0,105.0,3897.0,18.5,75,US
+Chevrolet Monza 2+2,20.0,8,262.0,110.0,3221.0,13.5,75,US
+Chevrolet Chevelle Malibu Classic,17.5,8,305.0,140.0,4215.0,13.0,76,US
+Chevrolet Nova,22.0,6,250.0,105.0,3353.0,14.5,76,US
+Chevrolet Chevette,29.0,4,85.0,52.0,2035.0,22.2,76,US
+Chevrolet Woody,24.5,4,98.0,60.0,2164.0,22.1,76,US
+Chevrolet C10,13.0,8,350.0,145.0,4055.0,12.0,76,US
+Chevrolet Caprice Classic,17.5,8,305.0,145.0,3880.0,12.5,77,US
+Chevrolet Concours,17.5,6,250.0,110.0,3520.0,16.4,77,US
+Chevrolet Monte Carlo Landau,15.5,8,350.0,170.0,4165.0,11.4,77,US
+Chevrolet Chevette,30.5,4,98.0,63.0,2051.0,17.0,77,US
+Chevrolet Malibu,20.5,6,200.0,95.0,3155.0,18.2,78,US
+Chevrolet Monte Carlo Landau,19.2,8,305.0,145.0,3425.0,13.2,78,US
+Chevrolet Chevette,30.0,4,98.0,68.0,2155.0,16.5,78,US
+Chevrolet Caprice Classic,17.0,8,305.0,130.0,3840.0,15.4,79,US
+Chevrolet Malibu Classic (sw),19.2,8,267.0,125.0,3605.0,15.0,79,US
+Chevrolet Citation,28.8,6,173.0,115.0,2595.0,11.3,79,US
+Chevrolet Chevette,32.1,4,98.0,70.0,2120.0,15.5,80,US
+Chevrolet Citation,28.0,4,151.0,90.0,2678.0,16.5,80,US
+Chevrolet Citation,23.5,6,173.0,110.0,2725.0,12.6,81,US
+Chevrolet Cavalier,28.0,4,112.0,88.0,2605.0,19.6,82,US
+Chevrolet Cavalier Wagon,27.0,4,112.0,88.0,2640.0,18.6,82,US
+Chevrolet Cavalier 2-door,34.0,4,112.0,88.0,2395.0,18.0,82,US
+Chevrolet Camaro,27.0,4,151.0,90.0,2950.0,17.3,82,US

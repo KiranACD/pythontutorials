@@ -70,5 +70,7 @@ h('eric') --> 4,
 h('michael') --> 0, 
 h('graham') --> 5
 
+So we can now store the objects at the indices returned by the hash function when applied to the strings. John will go to index 2, Eric will go to position 4, Michael will go to 0, Graham will go to position 5.
+
 
 

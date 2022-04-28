@@ -107,7 +107,7 @@ def h(key, num_slots):
 - h('michael', 11) --> 7
 - h('graham', 11) --> 6
 
-There is a collision between john and eric. If we take the num
+There is a collision between john and eric. If we take the num_slots as 5:
 
 - h('alexander', 5) --> 4
 - h('john', 5) --> 4

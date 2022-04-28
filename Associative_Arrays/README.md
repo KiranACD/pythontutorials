@@ -101,19 +101,19 @@ A simple way would be:
 def h(key, num_slots):
     return len(key) % num_slots # assuming key as strings
 ```
-h('alexander', 11) --> 9
-h('john', 11) --> 4
-h('eric', 11) --> 4
-h('michael', 11) --> 7
-h('graham', 11) --> 6
+- h('alexander', 11) --> 9
+- h('john', 11) --> 4
+- h('eric', 11) --> 4
+- h('michael', 11) --> 7
+- h('graham', 11) --> 6
 
 There is a collision between john and eric. If we take the num
 
-h('alexander', 5) --> 4
-h('john', 5) --> 4
-h('eric', 5) --> 4
-h('michael', 5) --> 2
-h('graham', 5) --> 1
+- h('alexander', 5) --> 4
+- h('john', 5) --> 4
+- h('eric', 5) --> 4
+- h('michael', 5) --> 2
+- h('graham', 5) --> 1
 
 There are three collisions now, between alexander, john and eric.
 

@@ -102,6 +102,19 @@ def get_name_tuple(*filters):
     fn_filters = [lambda x, y=filt: y in x[0] for filt in filters]
     return ('name', fn_filters)
 
+def get_mpg_tuple(f):
+    # f = (val, eq) or (val, l) or (val, g)
+    if f[1] == 'eq':
+        fn = lambda x, y=f[0]: x[1] == y
+    elif f[1] == 'l':
+        fn = lambda x, y=f[0]: x[1] < y
+    else:
+        fn = lambda x, y=f[0]: x[1] > y
+    
+    return ('MPG', fn)
+
+
+
 # with pipeline(('name', 'Chevrolet', 'Carlo', 'Landau')) as pipe:
 #     data = data_parser()
 #     for row in data:

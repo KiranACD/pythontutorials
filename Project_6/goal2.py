@@ -60,14 +60,6 @@ def filter_handler(filters):
     while True:
         data_row = yield
         data.send(data_row)
-            
-@coroutine
-def process_pipeline(filters):
-
-    name = filter_handler(filters)
-    while True:
-        data = yield        
-        name.send(data)
 
 @coroutine
 def broadcast(targets):

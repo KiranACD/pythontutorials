@@ -50,10 +50,10 @@ One common concrete implementation of an associative array is a hash map.
 
 Suppose we have an array of 7 slots, initially containing nothing. For now, we have indices associated with each of the slots. Suppose we want to store these maps:
 
-'john' --> John
-'eric' --> Eric
-'michael' --> Michael
-'graham' --> Graham
+- 'john' --> John 
+- 'eric' --> Eric
+- 'michael' --> Michael
+- 'graham' --> Graham
 
 in a dictionary and we want to retreive these items by using a key (string as we see above).
 
@@ -65,12 +65,102 @@ We will define a function that will return an integer value for all these string
 
 Say our function produces the followig results:
 
-h('john') --> 2, 
-h('eric') --> 4, 
-h('michael') --> 0, 
-h('graham') --> 5
+- h('john') --> 2, 
+- h('eric') --> 4, 
+- h('michael') --> 0, 
+- h('graham') --> 5
 
 So we can now store the objects at the indices returned by the hash function when applied to the strings. John will go to index 2, Eric will go to position 4, Michael will go to 0, Graham will go to position 5.
 
+In short, to store a key/value pair:
+- calculate h(key) --> idx
+- store value in slot idx
 
+To look up a value by key
+- calculate h(key) --> idx
+- return value in slot idx
+
+### Hash Functions
+
+Creating the function h(key) when we know all the possible keys ahead of time is easy. But this is not the case. 
+
+Bounding the resturned index value can be done usig modulo. Ensuring uniqueness of the return integer value of hash function on an input is hard. We have to ensure h(k1) != h(k2) if k1 != k2.
+
+Maybe we dont need to. Maybe we can drop this requirement.
+
+Hash function is a function, x = y ==> f(x) = f(y), that maps from a set(domain) of abitrary size (possibly infinite) to another (smaller) set of fixed size (range).
+
+h:D --> R where cardinality of R < cardinality of D
+
+For our hash tables, we want:
+- the range to be a defined subset of the non-negative integers 0, 1, 2, 3, ...
+- the generated indices for expected input values to be uniormly distributed (as much as possible). Now that we have allowed the hash function to return the same integer for different inputs, we dont want the generated indices to be in a small grouping amongst the empty slots. We want them to be spread out.
+
+A simple way would be:
+```
+def h(key, num_slots):
+    return len(key) % num_slots # assuming key as strings
+```
+h('alexander', 11) --> 9
+h('john', 11) --> 4
+h('eric', 11) --> 4
+h('michael', 11) --> 7
+h('graham', 11) --> 6
+
+There is a collision between john and eric. If we take the num
+
+h('alexander', 5) --> 4
+h('john', 5) --> 4
+h('eric', 5) --> 4
+h('michael', 5) --> 2
+h('graham', 5) --> 1
+
+There are three collisions now, between alexander, john and eric.
+
+Lets take another function:
+```
+def h(key, num_slots):
+    total = sum(ord(c) for c in key)
+    return total % num_slots
+```
+- h('alexander', 11) --> 948 % 11 = 2
+- h('john', 11) --> 431 % 11 = 2
+- h('eric', 11) --> 419 % 11 = 1
+- h('michael', 11) --> 723 % 11 = 8
+- h('graham', 11) --> 624 % 11 = 8
+
+All these hash functions have collisions
+
+How do we deal with collisions?
+
+#### Chaining
+
+Given the output from the above hash function, we store ['alexander', Alexander] in slot number 2, ['john', John] in the same slot, ['eric', Eric] in slot number 1, ['michael', Michael] in slot 8, ['graham', Graham] in slot 8 too. So we end up with a list of lists in some slots. When want to lookup a particular key, we get the index value from the hash function for the key and we iterate over the list of lists in the associated slot until we find our key.
+
+This is relatively efficient when compared to iterating over all five elements everytime we looked up a key. This is also why we want the index values returned by our hash function be spread out. This minimizes the number of collisions and we have fewer items to iterate over in each slot on average.
+
+#### Probing (Linear)
+
+Consider the same hashing function as above and its output and the probe sequence:
+
+- h('alexander', 5) --> 948 % 5 = 3    3 -> 4 -> 0 -> 1 -> 2
+The hash value will always be the same and the probe sequence will always be the same. We put ['alexander', Alexander] at slot number 3.
+
+- h('john', 5) --> 431 % 5 = 1         1 -> 2 -> 3 -> 4 -> 0
+We put ['john', John] at 1 because there was an empty slot. 
+
+- h('eric', 5) --> 419 % 5 = 4         4 -> 0 -> 1 -> 2 -> 3
+We put ['eric', Eric] at slot number 4 as it is empty.
+
+- h('michael', 5) --> 723 % 5 = 3      3 -> 4 -> 0 -> 1 -> 2
+Slot number 3 is already taken by Alexander, 4 is taken up by Eric. Slot 0 is empty, so we put ['eric', Eric] at slot number 0.
+
+- h('graham', 5) --> 624 % 5 = 4       4 -> 0 -> 1 -> 2 -> 3
+Slot number 4 is occupid by Eric, 0 is taken up by Michael, 1 is taken up by John, so we put graham in slot number 2 as it is empty
+
+There are other types of probing.
+
+Lets find out how to fetch Alexander. The hash value is 3, and we check if 'alexander' is at 3. In this case, it is, so we return Alexander.
+
+To find Michael, get the hash value of 'michael' which is 3. As 'michael' is not at 3, we next check 4 and we find 'michael' is not at 4 either. Finally, moving along the probe sequence, we find 'michael' is at 0 and we return Michael.
 

@@ -769,3 +769,201 @@ next(d) # prints 3
 next(d) # StopItertion exception at the caller
 ```
 
+#### Throwing Exceptions
+
+We can throw exceptions into a subgen through a delegator. The delegator passes it to the subgen without intercepting it. We cannot handle it at the delegator.
+
+If the subgen propogates the exception/or any other exception back, then the delegator can handle it and either silence it or propogate it to back to the caller or do something else. 
+
+Finally we receive the exception back at the caller if the delegator propogates it back.
+```
+def echo():
+    while True:
+        received = yield
+        print(received)
+
+def delegator():
+    yield from echo()
+
+d = delegaator()
+next(d)
+d.send('hello')
+d.throw(ValueError) # This is not handled at the subgen echo, so it propogates
+                    # the exception to the delegator, which also does not handle it,
+                    # and hence propogates it back to the caller
+```
+We can catch the ValueError at the delegator when it is being propogated back from the subgen.
+```
+def delegator():
+    try:
+        yield from echo()
+    except ValueError:
+        print('We caught the value error')
+```
+But now, we get the StopIteration error at the caller.
+
+### Pipelines - Pulling Data
+
+Suppose we want to pull data from a file and apply various filters on it. Lets look at an example that contains rows of data on cars. 
+```
+import csv
+
+def parse_file(fname):
+    with open(fname) as f:
+        dialect = csv.Sniffer().sniff(f.read(2000))
+        f.seek(0)
+        next(f) # skip the header row
+        next(f) # skip the data type decription row
+        yield from csv.reader(f, dialect=dialect)
+
+def filter_data(rows, contains):
+    for row in rows:
+        if contains in row[0]: # filters only on the name of the car
+            yield row
+
+# Make a generic pipeline of filters
+def output(fname, *filter_words):
+    data = parse_file(fname)
+    for filter_word in filter_words:
+        data = filter_data(data, filter_word)
+    yield from data
+```
+
+### Pipelines - Pushing Data
+
+We can push data through a pipeline of different operations and filters and eventually print the output to the console or save it in a file
+```
+def coroutine(coro):
+    def inner(*args, **kwargs):
+        gen = coro(*args, **kwargs)
+        next(gen) # prime the gen
+        return gen
+    return inner
+
+# Create data consumer generator that will print what it receives. It can be later changed...
+# ...to print to file
+
+@coroutine
+def handle_data():
+    while True:
+        received = yield
+        print(received)
+
+
+@coroutine
+def power_up(n, next_gen):
+    while True:
+        received = yield
+        output = received**n
+        next_gen.send(output)
+
+@coroutine
+def filter_data(next_gen):
+    while True:
+        received = yield
+        if received%2 == 0:
+            next_gen.send(received)
+
+print_data = handle_data()
+filtered_data = filter_data(print_data)
+gen2 = power_up(3, filtered_data)
+gen1 = power_up(2, gen2)
+for i in range(1, 15):
+    gen1.send(i)
+```
+
+### Pipeline - Broadcasting
+
+Lets set up a file reader and a data parser that typecasts the data into the appropriate data type.
+```
+def file_reader(fname):
+    with open(fname) as f:
+        dialect = csv.Sniffer().sniff(f.read(2000))
+        f.seek(0)
+        reader = csv.reader(f, dialect=dialect)
+        yield from reader
+
+def data_parser():
+    data = file_reader(input_file)
+    next(data)
+    for row in data:
+        parsed_row = [converter(item) for converter, item in zip(converters, row)]
+        yield parsed_row
+```
+Now we need to setup coroutines to push data into them for processing and saving
+```
+def coroutine(fn):
+    def inner(*args, **kwargs):
+        gen = fn(*args, **kwargs)
+        next(gen)
+        return gen
+    return inner
+
+@coroutine
+def save_data(fname, headers):
+    fname = output_file_path + fname
+    with open(fname, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(headers)
+        while True:
+            data_row = yield
+            writer.writerow(data_row)
+
+@coroutine
+def filter_data(filter_predicate, target):
+    while True:
+        data_row = yield
+        if filter_predicate(data_row):
+            target.send(data_row)
+```
+Finally set up a broadcaster that will take in function references as arguments. We can send in data from the data_parser into the broadcaster, which will inturn send it to filter, process and save data as per the function references that we have set up.
+```
+@coroutine
+def broadcast(targets):
+    while True:
+        data_row = yield
+        for target in targets:
+            target.send(data_row)
+```
+Now we setup the pipeline that will send data into the broadcaster for further processing.
+```
+@coroutine
+def process_data():
+    out_pink_cars = save_data('pink_cars.csv', headers)
+    out_ford_green = save_data('ford_green.csv', headers)
+    out_older = save_data('older.csv', headers)
+
+    filter_pink_cars = filter_data(lambda d: d[idx_colour].lower() == 'pink', out_pink_cars)
+
+    def pred_ford_green(d):
+        return d[idx_make].lower() == 'ford' and d[idx_colour].lower() == 'green'
+    
+    filter_ford_green = filter_data(pred_ford_green, out_ford_green)
+
+    filter_older = filter_data(lambda d: d[idx_year] <= 2010, out_older)
+
+    filters = (filter_pink_cars, filter_ford_green, filter_older)
+
+    broadcaster = broadcast(filters)
+
+    while True:
+        row = yield
+        broadcaster.send(row)
+```
+Set up a context manager that will open the pipeline and then close it when the work is done.
+```
+@contextmanager
+def pipeline():
+    p = process_data()
+    try:
+        yield p
+    finally:
+        p.close()
+
+with pipeline() as pipe:
+    data = data_parser()
+    for row in data:
+        pipe.send(row)
+```
+Now our data has been filtered and saved into respective files.
+

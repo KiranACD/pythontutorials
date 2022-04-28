@@ -144,19 +144,19 @@ This is relatively efficient when compared to iterating over all five elements e
 Consider the same hashing function as above and its output and the probe sequence:
 
 - h('alexander', 5) --> 948 % 5 = 3    3 -> 4 -> 0 -> 1 -> 2
-The hash value will always be the same and the probe sequence will always be the same. We put ['alexander', Alexander] at slot number 3.
+    - The hash value will always be the same and the probe sequence will always be the same.   We put ['alexander', Alexander] at slot number 3.
 
 - h('john', 5) --> 431 % 5 = 1         1 -> 2 -> 3 -> 4 -> 0
-We put ['john', John] at 1 because there was an empty slot. 
+    - We put ['john', John] at 1 because there was an empty slot. 
 
 - h('eric', 5) --> 419 % 5 = 4         4 -> 0 -> 1 -> 2 -> 3
-We put ['eric', Eric] at slot number 4 as it is empty.
+    - We put ['eric', Eric] at slot number 4 as it is empty.
 
 - h('michael', 5) --> 723 % 5 = 3      3 -> 4 -> 0 -> 1 -> 2
-Slot number 3 is already taken by Alexander, 4 is taken up by Eric. Slot 0 is empty, so we put ['eric', Eric] at slot number 0.
+    - Slot number 3 is already taken by Alexander, 4 is taken up by Eric. Slot 0 is empty, so we put ['eric', Eric] at slot number 0.
 
 - h('graham', 5) --> 624 % 5 = 4       4 -> 0 -> 1 -> 2 -> 3
-Slot number 4 is occupid by Eric, 0 is taken up by Michael, 1 is taken up by John, so we put graham in slot number 2 as it is empty
+    - Slot number 4 is occupid by Eric, 0 is taken up by Michael, 1 is taken up by John, so we put graham in slot number 2 as it is empty
 
 There are other types of probing.
 

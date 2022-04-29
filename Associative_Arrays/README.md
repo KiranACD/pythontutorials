@@ -164,3 +164,43 @@ Lets find out how to fetch Alexander. The hash value is 3, and we check if 'alex
 
 To find Michael, get the hash value of 'michael' which is 3. As 'michael' is not at 3, we next check 4 and we find 'michael' is not at 4 either. Finally, moving along the probe sequence, we find 'michael' is at 0 and we return Michael.
 
+This is the basic idea of how to use hash function.
+
+#### Sizing Issues
+
+When we create a hash table, how big should it be? 
+
+- We cannot make it arbitrarily large as there are memory constraints. 
+- Start small and grow it over time as needed.
+- resizing is expensive as you need to recompute hashes and move data around. 
+- over allocate. Say we start with 10 slots. Once all slots are filled, instead of resizing it to 11, we resize it to 15 slots. Then, once we reach 15, resize to 25. And so on...
+
+#### Other Issue
+
+Deleting items can affect the probing algorithm, as you leave holes in there. We also need to compact the table when items are deleted.
+Hash function output needs to be evenly distriuted, satisfy the requirements of hash functions, and the probe sequence needs to be decent as well.
+
+
+## Python Dictionaries
+
+### Key Sharing
+
+Suppose we have this class:
+```
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+```
+Multiple instances of this class could be:
+```
+john = Person('John', 78)
+eric = Person('Eric', 75)
+michael = Person('Michael', 75)
+```
+Each of the objects are essentially dictionaries. The dictionary would have ['name', 'John'] and ['age', 78] and similar struture for the other objects. It would be redundant to have the multiple name, age three times. 
+
+We can pull name, age out as a seperate object and we maintain another object that has the values of the name and age. 
+
+This is also called a split table dictionary. Key sharing helps multiple instances of the same cash have more efficient storage. 
+

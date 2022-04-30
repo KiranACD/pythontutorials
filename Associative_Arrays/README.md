@@ -204,3 +204,192 @@ We can pull name, age out as a seperate object and we maintain another object th
 
 This is also called a split table dictionary. Key sharing helps multiple instances of the same cash have more efficient storage. 
 
+### Compact Dictionaries
+
+Consider this dictionary `{'alex':Alex, 'john':John, 'eric':Eric}`.
+
+- hash('alex') --> 3
+- hash('john') --> 1
+- hash('eric') --> 6
+
+Assume we have dictionary with 7 slots and we have populated three of those slots. 'john' is at 1, 'alex' is at 3 and 'eric' is at 6. How do we represent this?
+```
+[['-', '-', '-'],
+ [-6350376054362344353, 'john', John],
+ ['-', '-', '-'],
+ [4939205761874899982, 'alex', Alex],
+ ['-', '-', '-'],
+ ['-', '-', '-'],
+ [6629767757277097963, 'eric', Eric]
+]
+```
+The first element in the non-empty list is the hash value. We store the hash value because it is fast and efficient to compare integers. So we start the comparison with the hash value rather than comparing strings. A point to note here is that the key order in the slots is different from the insertion order. 
+
+What happens in compact dictionaries is that we store the data into 2 seperate lists. The first one is going to just be the items. 
+```
+values = [
+          [4939205761874899982, 'alex', Alex],
+          [-6350376054362344353, 'john', John],
+          [6629767757277097963, 'eric', Eric]
+         ]
+indices = [None, 1, None, 0, None, None, 2]
+```
+The key order in the values list is the same as the insertion order. The indices list maps the hash value of the key to the position in the values list. If we want to find Alex, the hash value of hash('alex') is the 3, so we go to values[indices[3]] to find Alex.
+
+## Python Hash
+
+The python buit-in function always returns an int. It satisfies the condition that if a==b is True, then hash(a) == hash(b) is also True. Python truncates hashes to some fixed size. You can find the size by running `sys.hash_info.width`. Of course, you will have to import the sys module. 
+
+- `map(hash, [1, 2, 3, 4])` --> 1, 2, 3, 4
+- `map(hash, [1.1, 2.2, 3.3, 4.4])` --> 230584300921369601, 461168601842739202, 691752902764107779, 922337203685478404
+- `map(hash, ['hello', 'python', '!'])` --> -9163354275683762850, -7847635527679356851, -4573390878920968095
+- `hash((1, 'a', 10.5))` --> 3594221671904477154
+
+The last item shows we can hash a tuple as well. But we cannot hash sequence types that are mutable as they cannot be hashed. We cannot hash an immutable data type, if it has a mutable data type within it. 
+
+This is because hash values are used for hash tables which is used to determine the position index, and the start values of the probe sequence. 
+- The hash of an immutable data type named 'a' will never change 
+- When we look for dict[a], we will always look for a at the same index. 
+
+- The hash of a mutable data type will change. 
+- We will end up looking at the wrong index. 
+
+Two identical tuples will still be different objects occupying different memory slots. However its hash values are determined by the content of the tuple. If you make a key:value pair with one of the identical tuple as the key, then we can retreive the value using the other tuple as well, because the hash values of both tuples are the same.
+
+The hash value of an object changes from run-to-run. You can rely on them being the same in a single program run, but not across runs. 
+
+
+# Dictionaries
+
+## Dictionary Elements
+
+Basic structure of dictionary elements key:value. The value can be any python object. The key on the other hand need to be a hashable object. The hash table requires the hash of an object to be constant in the lifetime of a program run. 
+
+### Hashable Objects
+
+The Python function hash(obj):
+
+- Returns some integer truncated based on Python build: 32-bit, 64-bit.
+- Raises exception if obj is unhashable type.
+
+Listing out objects that are hashable:
+
+- int, float, complex, binary, Decimal, fraction --> immutable --> hashable
+- strings --> immutable collection --> hashable
+- frozenset --> immutable collection --> elements within are required to be immutable --> hashable
+- tuples --> immutable collection --> hashable only if all elements are also hashable.
+- set, dictionary --> mutable collection --> not hashable
+- list --> mutable collection --> not hashable
+- functions --> immutable. Yes, you can change the metadata, the docstring, but you cannot change the function itself --> hashable
+- custom classes and objects --> maybe
+
+Requirments for an object to be hashable:
+
+- the hash value of the object must be an integer value. It is to be used as the start value of a probe sequence. 
+- if two objects are equal, then the hashes must also be equal.
+
+Two objects that do not compare equal, may have the same hash. This is known as hash collision. More the number of hash collisions, slower the dictionary, because, to find a key now, we have to do multiple probes into the associative array inorder to find that key. 
+
+Python does a certain amount of randomization to generate these hash values because if it were predictable, any particular website may be attacked by forcing the values to go into that dictionary that have the same key and hence slow down the system. 
+
+We have to follow these requirements of hashes when we create custom hashes as well.
+
+## Creating Dictionaries
+
+### Literals
+
+```
+{key1 : value1,
+ key2 : value2,
+ key3 : value3}
+```
+### Constructor
+
+`dict(key1=value1, key2=value2, key3=value3)`
+
+When we use this approach, the key should be a valid idenntifier name. The dictionary key will be a string of that name.
+
+if we have an existing dictionary d1 and we make a new dictionary `d2 = dict(d1)`, then d2 becomes a shallow copy of d1. 
+
+### Comprehensions
+
+`{str(i): i**2 for i in range(1, 5)}` --> {'1':1, '2':4, '3':9, '4': 16}
+
+### Using fromkeys()
+
+`fromkeys()` is a class method on dict. It creates a dictionary with depcified keys all assigned the same value. 
+
+`d = dict.fromkeys(iterable, value)`. All the items from the iterable, provided they are immutable, will become keys and will be assigned value. If value is not provided, they will be assigned None. 
+
+
+## Common Operations
+
+`d[key] = value`
+
+- Creates a key if it idoes not exist
+- Assigns a value to key
+
+`d[key]`
+
+- As an expression, returns the value for the specified key
+- exception KeyError if key is not found
+
+`d.get(key)`
+
+- Return value if key is found, None if key is not found
+- Default return value can be specified. `d.get(key, default)
+
+`key in d` or `key not in d` 
+
+- Membership testing - Test if a key is present in the dictionary or not.
+- Hash a key a do a probe in the hash table looking for the hash value of the key. Hence, key membership testing is efficient in Python. 
+- True if key is in d, False if not. 
+- To test if a value is present in the dictionary, we have to iterate through the values of the dictionary and hence, is not as efficient as searching for a key.
+
+`len(d)` - Return the number of items in dictionary
+
+`d.clear()`
+
+- Clears out all items in dictionary
+- It does an inplace change in the dictionary.
+- Assigning d = {} replaces the old object with the new empty dictionary object.
+
+`del d[key]`
+
+- Removes element with that key from d
+- exception KeyError if key is not in d
+
+`d.pop(key)`
+
+- Removes the element with that key from d
+- Returns the corresponding value
+- exception KeyError if key is not in d
+- Adding default as argument avoids the KeyError exception. If key is not in d, it returns the default value specified.
+
+`d.popitem()`
+
+- Removes an item from d
+- Returns tuple (key, value)
+- KeyError if dictionary is empty
+- Python 3.6+, it will remove the last inserted item - guaranteed.
+
+`result = d.setdefault(key, value)`
+
+- To insert a key with a default value only if key does not exist.
+
+```
+d = {'a': 1, 'b': 2}
+if 'c' not in d:
+    d[c] = 0
+```
+Combine this with returning the newly inserted (default) value or existing valeue if already there. 
+```
+def insert_if_not_present(d, key, value):
+    if key not in d:
+        d[key] = value
+        return value
+    else:
+        return d[key]
+        
+
+

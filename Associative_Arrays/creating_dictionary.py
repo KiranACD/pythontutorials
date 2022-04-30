@@ -9,6 +9,7 @@ d4 = dict(d1) #d4 is a shallow copy for d1
 keys = ['a', 'b']
 values = [100, 200, 3]
 d5 = {k:v for k, v in zip(keys, values)}
+d6 = dict.fromkeys('ab', 0)
 
 
 
@@ -17,6 +18,7 @@ print(d2)
 print(d3)
 print(d4)
 print(d5)
+print(d6)
 
 print('--------------------------------------------')
 

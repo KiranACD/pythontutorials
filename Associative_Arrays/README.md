@@ -390,6 +390,12 @@ def insert_if_not_present(d, key, value):
         return value
     else:
         return d[key]
-        
+```
+Instead of all of the above, we can write
+
+`result = d.setdefault(key, value)`
+
+
+
 
 
